@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -67,6 +68,33 @@ func mainPage(c *gin.Context) {
 	})
 }
 
+// persistNewIdname is a function that saves new idname to the idnameFile
+func persistNewIdname() {
+	f, err := os.OpenFile(idnameFile, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
+	defer f.Close()
+	check(err)
+	for _, elem := range idnames {
+		_, err = f.WriteString(fmt.Sprintf("%v,%v\n", elem.ID, elem.Name))
+		check(err)
+	}
+}
+
+// postIdnameAPI is a function that takes json data from POST request and adds the info to idnames file (if the data is correct)
+// example:
+// curl localhost:8080/newid \
+// 	--request "POST" \
+// 	--header "Content-Type: application/json" \
+// 	--data '{"id": 5,"name": "test5"}'
+func postIdnameAPI(c *gin.Context) {
+	var newIdname idname
+	if err := c.BindJSON(&newIdname); err != nil {
+		return
+	}
+	idnames = append(idnames, newIdname)
+	c.IndentedJSON(http.StatusCreated, idnames)
+	persistNewIdname()
+}
+
 func main() {
 	// read in the idnames
 	readIdnames()
@@ -82,7 +110,7 @@ func main() {
 	router.GET("/", mainPage)
 	router.GET("/idapi", getIdnamesAPI)
 	router.GET("/idwp", getIdnamesWP)
-	// router.POST("/newid", postIdname)
+	router.POST("/newid", postIdnameAPI)
 	// router.GET("/newid/:id/:name", postIdnameParams)
 	// router.GET("/newid/idparams", postIdnameParams2)
 
