@@ -105,6 +105,23 @@ func postIdnameWP(c *gin.Context) {
 	persistNewIdname()
 }
 
+// postIdnameWPParams is a function that creates new idname from the named params given in url like /newid?id=<id>&name=<name>
+func postIdnameWPParams(c *gin.Context) {
+	idStr, ok := c.GetQuery("id")
+	if !ok {
+		return
+	}
+	id, err := strconv.Atoi(idStr)
+	check(err)
+	name, ok := c.GetQuery("name")
+	if !ok {
+		return
+	}
+	idnames = append(idnames, idname{ID: id, Name: name})
+	c.IndentedJSON(http.StatusCreated, idnames)
+	persistNewIdname()
+}
+
 func main() {
 	// read in the idnames
 	readIdnames()
@@ -114,15 +131,15 @@ func main() {
 	router.SetTrustedProxies(nil)
 	router.LoadHTMLGlob("templates/*.html")
 	// GET and POST
-	// router.GET("/", func(c *gin.Context) {
-	// c.String(http.StatusOK, "Hi there\n")
-	// })
+	router.GET("/hi", func(c *gin.Context) {
+		c.String(http.StatusOK, "Hi there\n")
+	})
 	router.GET("/", mainPage)
 	router.GET("/idapi", getIdnamesAPI)
 	router.GET("/idwp", getIdnamesWP)
 	router.POST("/newid", postIdnameAPI)
 	router.GET("/newid/:id/:name", postIdnameWP)
-	// router.GET("/newid/idparams", postIdnameWPParams)
+	router.GET("/newid/w_params", postIdnameWPParams)
 
 	// Run
 	// router.Run("localhost:8080")
