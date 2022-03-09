@@ -95,6 +95,16 @@ func postIdnameAPI(c *gin.Context) {
 	persistNewIdname()
 }
 
+// postIdnameWP is a function that creates new idname from the params given in url like /newid/:id/:name
+func postIdnameWP(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	check(err)
+	name := c.Param("name")
+	idnames = append(idnames, idname{ID: id, Name: name})
+	c.IndentedJSON(http.StatusCreated, idnames)
+	persistNewIdname()
+}
+
 func main() {
 	// read in the idnames
 	readIdnames()
@@ -111,8 +121,8 @@ func main() {
 	router.GET("/idapi", getIdnamesAPI)
 	router.GET("/idwp", getIdnamesWP)
 	router.POST("/newid", postIdnameAPI)
-	// router.GET("/newid/:id/:name", postIdnameParams)
-	// router.GET("/newid/idparams", postIdnameParams2)
+	router.GET("/newid/:id/:name", postIdnameWP)
+	// router.GET("/newid/idparams", postIdnameWPParams)
 
 	// Run
 	// router.Run("localhost:8080")
