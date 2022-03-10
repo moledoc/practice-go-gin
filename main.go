@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -27,6 +28,14 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// idnameFileExist is a function that checks if idname file exists.
+func idnameFileExist() bool {
+	if _, err := os.Stat(idnameFile); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
 }
 
 // readIdnames is a function, that reads idnames from a file
@@ -124,7 +133,9 @@ func postIdnameWPParams(c *gin.Context) {
 
 func main() {
 	// read in the idnames
-	readIdnames()
+	if idnameFileExist() {
+		readIdnames()
+	}
 	// setup router
 	router := gin.Default()
 	//// at the moment do not set up any trusted proxies
